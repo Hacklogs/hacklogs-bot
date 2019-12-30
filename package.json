@@ -1,0 +1,26 @@
+{
+  "name": "hacklogs",
+  "version": "1.0.0",
+  "description": "Just a bot which may \"steal\" info from forums and etc. (I hope he may)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hacklogs/hacklogs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hacklogs/hacklogs/issues"
+  },
+  "homepage": "https://github.com/Hacklogs/hacklogs#readme",
+  "dependencies": {
+    "package": "^1.0.1"
+  },
+  "devDependencies": {
+    "discord.js": "^11.5.1",
+    "nodemon": "^2.0.2"
+  }
+}
