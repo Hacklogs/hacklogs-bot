@@ -6,55 +6,122 @@ const green = "#00ff00"
 const blue = "#0000ff"
 
 
-prefix = "hl"
+prefix = "_"
 
 
 //when bot start
 client.on("ready", () => {
   console.log(`${client.user.username} is ready!`)
-  client.user.setActivity("hacking tuts", { type: "WATCHING"})
+  client.user.setActivity("porn tuts", { type: "WATCHING"})
 })
 
 //just commands
-client.on("message", msg => {
-  if(msg.author.bot)return
+client.on("message", async message => {
 
-  if(msg.content == "hl"){
-    hlAll = new Discord.RichEmbed()
-    .setTitle("please type `hl -h` or `-help` to get info")
-    .setColor("#ff0000")
-
-    msg.channel.send(hlAll)
+  const args = message.content.slice(prefix.length).trim().split(/ +/g);
+  const cmd = args.shift().toLowerCase();
+  
+  if(cmd === "ping") {
+    const msg = await message.channel.send(`Pinging...`);
+    msg.edit(`Pong! \n Latency is ${Math.floor(msg.createdAt - message.createdAt)}ms \n API latency is ${Math.round(client.ping)}ms`);
   }
-  if(msg.content == prefix + " -h"){
-    hlHelp = new Discord.RichEmbed()
-    .setTitle ("help")
-    .setColor ("#ff0000")
-    .addField ('-cmds', 'type ' + prefix + ' `-cmds` or `-commands` to get all commands')
+});
 
-    msg.channel.send(hlHelp)
+client.on("message", async (message) => {
+  if(message.author.bot)return;
+  if(!message.content.startsWith(prefix))return;
+  if(!message.member.hasPermission("ADMINISTRATOR", "MANNAGE_MESSAGES"));
+  if(!message.guild)return;
+
+  const logs_channel = client.channels.get("661189470753914920")
+
+  let messageArray = message.content.split(" ");
+  let cmd = messageArray[0];
+  let args = messageArray.slice(1);
+
+  //Kick member
+  if(cmd === prefix + "kick") {
+  
+    let kUser = message.guild.member(message.mentions.users.first() || message.guilds.members.get(args[0]));
+    if(!kUser) return message.channel.send("This user doesn't exist.");
+    let kReason = args.join(" ").slice(20);
+    if(!message.member.hasPermission("KICK_MEMBERS", "BAN_MEMBERS")) return message.channel.send("You don't have any acces");
+    if(kUser.hasPermission("KICK_MEMBERS", "BAN_MEMBERS")) return message.channel.send("This boi can't be kicked")
+
+    message.guild.member(kUser).kick(kReason).catch((err) => console.log(err))
+
+    const kEmbed = new Discord.RichEmbed()
+    .setTitle("SOMEONE WAS KICKED!")
+    .setColor(red)
+    .addField("**kicked user**", kUser, false)
+    .addField("**kicked by**", `<@${message.author.id}>`, false)
+    .addField("**reason**", kReason)
+    .setTimestamp()
+
+
+    logs_channel.send(kEmbed)
+
+    return;
   }
-  if(msg.content == prefix + " -cmds"){
-    hlCmds = new Discord.RichEmbed()
-    .setTitle("commands")
-    .setDescription("Sorry, there is no any commands yet...")
-    .setColor("#ff0000")
+  //Ban member
+  if(cmd === prefix + "ban") {
+    let bUser = message.guild.member(message.mentions.users.first() || message.guilds.members.get(args[0]));
+    if(!bUser) return message.channel.send("This user doesn't exist.");
+    let bReason = args.join(" ").slice(20);
+    if(!message.member.hasPermission("KICK_MEMBERS", "BAN_MEMBERS")) return message.channel.send("You don't have any acces");
+    if(bUser.hasPermission("KICK_MEMBERS", "BAN_MEMBERS")) return message.channel.send("This boi can't be kicked")
 
-    msg.channel.send(hlCmds)
+    message.guild.member(bUser).ban(bReason).catch((err) => console.log(err))
+
+    const bEmbed = new Discord.RichEmbed()
+    .setTitle("SOMEONE WAS BANNED!")
+    .setColor(red)
+    .addField("**banned user**", bUser, false)
+    .addField("**banned by**", `<@${message.author.id}>`, false)
+    .addField("**reason**", bReason)
+    .setTimestamp()
+
+    logs_channel.send(bEmbed)
+
+    return;
   }
-})
+  //Mute member
+  if(cmd === prefix + "mute") {
+    let mUser = message.guild.member(message.mentions.users.first() || message.guilds.members.get(args[0]));
+    if(!mUser) return message.channel.send("This user doesn't exist.");
+    let mReason = args.join(" ").slice(20);
+    if(!message.member.hasPermission("MANAGE_ROLES")) return message.channel.send("You don't have any acces");
+    if(mUser.hasPermission("MANAGE_ROLES", "ADMINISTRATOR")) return message.channel.send("Roles can't be deleted")
+
+    mUser.removeRoles(mUser.roles)
+    mUser.addRole("662192530791727124");
+  }
+  //Unmute member
+  if(cmd === prefix + "unmute") {
+    let unmUser = message.guild.member(message.mentions.users.first() || message.guilds.members.get(args[0]));
+    if(!unmUser) return message.channel.send("This user doesn't exist.");
+    if(!message.member.hasPermission("MANAGE_ROLES")) return message.channel.send("You don't have any acces");
+    if(unmUser.hasPermission("MANAGE_ROLES", "ADMINISTRATOR")) return message.channel.send("Roles can't be deleted")
+
+    unmUser.removeRole("662192530791727124");
+    unmUser.addRole("660845925035671552");
+  }
+  //clear messages
+  if(cmd === prefix + "clear") {
+
+    message.channel.bulkDelete(args[0]).then(() => {
+      message.channel.send("Messages deleted.").then(msg => msg.delete(3000));
+    });
+  }
 
 
-                                                                //LOGGING\\
-
-
+});
 
 //message when new member enters the server and give him role
 client.on("guildMemberAdd", member => {
-  const welcome_message = `Welcome <@${member.id}> to the english version of the [Hacklogs] server, victim >:З`
-  const welcome_channel = client.channels.get("660879339717394432").send(welcome_message)
+  const welcome_channel = client.channels.get("660879339717394432")
 
-  console.log('----------- \n New victim entered! \n ----------- \n')
+  console.log('----------- \nNew victim entered! \n----------- \n')
 
   const welcome_embed = new Discord.RichEmbed()
   .setTitle('Welcome!')
@@ -65,26 +132,24 @@ client.on("guildMemberAdd", member => {
   welcome_channel.send(welcome_embed)
 
   member.addRole(member.guild.roles.find(role => role.name === "victim"))
-  console.log('----------- \n Role Added \n ----------- \n')
+  console.log('----------- \nRole Added \n----------- \n')
 
-})
-
+});
 //message when member left the server
 client.on("guildMemberRemove", member => {
-  const left_message = `<@${member.id}> was hacked`
-  const welcome_channel = client.channels.get("660879339717394432").send(left_message)
+  const welcome_channel = client.channels.get("660879339717394432")
 
-  const welcome_embed = new Discord.RichEmbed()
-  .setTitle('Welcome!')
+  const left_embed = new Discord.RichEmbed()
+  .setTitle('BYE!')
   .setDescription(`Bye-bye ${member.user.username}#${member.user.discriminator}! I wish you was hacked by some kind kidd :)`)
   .setThumbnail(member.user.displayAvatarURL)
   .setAuthor(client.user.username, client.user.displayAvatarURL)
-
+  
   welcome_channel.send(left_embed)
-
-  console.log('----------- \n Victim left! \n ----------- \n')
-})
-
+  
+  console.log('----------- \nVictim left! \n----------- \n')
+});
+//message when message deleted
 client.on("messageDelete",(message) => {
   
   const logs_channel = client.channels.get("661189470753914920")
@@ -98,8 +163,8 @@ client.on("messageDelete",(message) => {
   .setTimestamp()
 
   logs_channel.send(message_delete)
-})
-
+});
+//message when message updated/deleted
 client.on("messageUpdate", (oldMessage, newMessage) =>{
   if(newMessage.author.bot)return;
 
@@ -115,6 +180,9 @@ client.on("messageUpdate", (oldMessage, newMessage) =>{
 
   console.log(`MESSAGE EDITED \n ${oldMessage.content} was edited to ${newMessage.content} \n and message author is <@${newMessage.author.id}>`)
 
-})
+});
 
-client.login('your super secret TOKEN')
+
+
+
+client.login('CENSORED');
