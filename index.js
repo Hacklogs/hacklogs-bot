@@ -2,31 +2,84 @@ const Discord = require("discord.js")
 const client = new Discord.Client()
 
 const red = "#ff0000"
-const green = "#00ff00"
-const blue = "#0000ff"
 
+prefix = "/"
 
-prefix = "_"
-
-
-//when bot start
+//WHEN BOT STARTS
 client.on("ready", () => {
   console.log(`${client.user.username} is ready!`)
   client.user.setActivity("porn tuts", { type: "WATCHING"})
 })
 
-//just commands
+//JUST COMMANDS
 client.on("message", async message => {
+  if(message.author.bot)return;
+  if(!message.content.startsWith(prefix))return;
+  if(!message.guild)return;
 
   const args = message.content.slice(prefix.length).trim().split(/ +/g);
   const cmd = args.shift().toLowerCase();
   
+  if(cmd === "help") {
+    helpEmbed = new Discord.RichEmbed()
+    .setTitle("Help")
+    .setDescription("**I can help you**")
+    .setColor("#00ff00")
+    .addField(`${prefix}ping`, `Will send you latency status\nUsage: **${prefix}ping**`, false)
+    .addField(`${prefix}say`, `Will say anything you want\nUsage: **${prefix}say [what you want say]**`, false)
+    .addField(`${prefix}whois`, `Will say you who is user\nUsage: **${prefix}whois @member //if u want**`, false)
+
+    message.author.sendMessage(helpEmbed)
+
+    if(!message.member.hasPermission("ADMINISTRATION"))return;
+    if(!message.member.hasPermission("KICK_MEMBERS","BAN_MEMBERS"))return;
+    if(!message.member.hasPermission("MANAGE_MESSAGES"))return;
+
+    adminEmbed = new Discord.RichEmbed()
+    .setTitle("Help")
+    
+    message.author.sendMessage(adminEmbed)
+  }
+
+  //pinging latency and API latency
   if(cmd === "ping") {
+
+    // Pong! 
+    // Latency is 539ms. This is ping in my country ye
+    // API latency is 220ms.
+
     const msg = await message.channel.send(`Pinging...`);
-    msg.edit(`Pong! \n Latency is ${Math.floor(msg.createdAt - message.createdAt)}ms \n API latency is ${Math.round(client.ping)}ms`);
+    msg.edit(`Pong! \nLatency is ${Math.floor(msg.createdAt - message.createdAt)}ms. \nAPI latency is ${Math.round(client.ping)}ms.`);
+  }
+  if(cmd === "say") {
+
+    //  _say Hello
+    //  Hello
+
+
+    message.delete();
+    if(args.length < 1) return message.reply("Nothing to say.").then(m => m.delete(3000));
+    message.channel.send(args.join(" "));
+  }
+  if(cmd === "whois") {
+    let usr = message.mentions.users.first() || message.author;
+    let usrj = message.guild.member(message.guild.members.get(args[0]) || message.author);
+
+    message.channel.send(`
+Name is: ${usr.username}
+Discriminator is: ${usr.discriminator}
+ID is: ${usr.id}
+--------------------------------------
+Joined to Discord on: ${usr.createdAt.toLocaleString().replace(",", " ")}
+Joined to Server on: ${usrj.joinedAt.toLocaleString().replace(",", " ")}
+--------------------------------------
+Bot: ${usr.bot}
+    `)
   }
 });
 
+
+/////ADMINISTRATION COMMANDS
 client.on("message", async (message) => {
   if(message.author.bot)return;
   if(!message.content.startsWith(prefix))return;
@@ -108,12 +161,10 @@ client.on("message", async (message) => {
   }
   //clear messages
   if(cmd === prefix + "clear") {
-
     message.channel.bulkDelete(args[0]).then(() => {
       message.channel.send("Messages deleted.").then(msg => msg.delete(3000));
     });
   }
-
 
 });
 
@@ -151,7 +202,8 @@ client.on("guildMemberRemove", member => {
 });
 //message when message deleted
 client.on("messageDelete",(message) => {
-  
+  if(message.author.bot)return;
+
   const logs_channel = client.channels.get("661189470753914920")
 
   console.log("In '" + message.channel.name + "' was deleted '" + message.content + "' at " + Date())
@@ -181,8 +233,5 @@ client.on("messageUpdate", (oldMessage, newMessage) =>{
   console.log(`MESSAGE EDITED \n ${oldMessage.content} was edited to ${newMessage.content} \n and message author is <@${newMessage.author.id}>`)
 
 });
-
-
-
 
 client.login('CENSORED');
